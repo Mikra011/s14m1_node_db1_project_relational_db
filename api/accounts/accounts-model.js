@@ -1,6 +1,6 @@
 const db = require('../../data/db-config')
 
-async function getAll() {
+function getAll() {
   // DO YOUR MAGIC
   return db('accounts')
 }
