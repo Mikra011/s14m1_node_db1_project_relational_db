@@ -1,37 +1,31 @@
 const db = require('../../data/db-config')
-const yup = require('yup')
 const Account = require('./accounts-model')
-
-const accountSchema = yup
-  .object()
-  .shape({
-    name: yup
-      .string()
-      .trim()
-      .min(3, "name of account must be between 3 and 100")
-      .max(100, "name of account must be between 3 and 100")
-      .required("name and budget are required"),
-    budget: yup
-      .number()
-      .typeError("Budget must be a number")
-      .positive("budget of account is too large or too small")
-      .max(1000000, "budget of account is too large or too small")
-      .required("name and budget are required")
-  });
 
 exports.checkAccountPayload = async (req, res, next) => {
   // DO YOUR MAGIC
   // Note: you can either write "manual" validation logic
   // or use the Yup library (not currently installed)
-  try {
-    await accountSchema.validate(req.body)
-    next()
-  } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({ message: error.message })
-    }
-    next(error)
+  const { name, budget } = req.body
+
+  if (name === undefined || budget === undefined) {
+    return res.status(400).json({ message: 'name and budget are required' })
   }
+
+  if (typeof name != 'string'
+    || name.trim().length < 3
+    || name.trim().length > 100) {
+    return res.status(400).json({ message: 'name of account must be between 3 and 100' })
+  }
+
+  if (typeof budget !== 'number' || isNaN(budget)) {
+    return res.status(400).json({ message: 'budget of account must be a number' })
+  }
+
+  if (budget < 0 || budget > 1000000) {
+    return res.status(400).json({ message: 'budget of account is too large or too small' })
+  }
+
+  next()
 }
 
 exports.checkAccountNameUnique = async (req, res, next) => {
